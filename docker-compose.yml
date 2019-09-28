@@ -1,0 +1,52 @@
+version: '2.1'
+services:
+    postgres:
+        image: postgres:9.6
+        environment:
+            - POSTGRES_USER=airflow
+            - POSTGRES_PASSWORD=airflow
+            - POSTGRES_DB=airflow
+        ports:
+            - "5432:5432"
+
+    webserver:
+        image: airflow
+        build:
+          context: .
+          dockerfile: Dockerfile
+          args:
+            AIRFLOW_DEPS: gcp_api
+        restart: always
+        depends_on:
+          - postgres
+        environment:
+          - LOAD_EX=n
+          - EXECUTOR=Local
+          - FERNET_KEY=jsDPRErfv8Z_eVTnGfF8ywd19j4pyqE3NpdUBA_oRTo=
+          - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+          - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+          - AIRFLOW__SMTP__SMTP_HOST=smtp.gmail.com
+          - AIRFLOW__SMTP__SMTP_STARTTLS=True
+          - AIRFLOW__SMTP__SMTP_SSL=False 
+          - AIRFLOW__SMTP__SMTP_PORT=587
+          #Your mail
+          - AIRFLOW__SMTP__SMTP_MAIL_FROM=abdulfaqihalm@gmail.com 
+          - AIRFLOW__SMTP__SMTP_USER=abdulfaqihalm@gmail.com 
+          #Your mail pass
+          - AIRFLOW__SMTP__SMTP_PASSWORD=perangdunia
+          #Change URL as the ports map you want
+          - AIRFLOW__WEBSERVER__BASE_URL=http://localhost:8010 
+          - AIRFLOW__CLI__ENDPOINT_URL=http://localhost:8010
+        volumes:
+            - ./dags:/usr/local/airflow/dags
+            - ./images:/usr/local/airflow/images
+            # Uncomment to include custom plugins
+            # - ./plugins:/usr/local/airflow/plugins
+        ports:
+            - "8010:8080"
+        command: webserver
+        healthcheck:
+            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
+            interval: 30s
+            timeout: 30s
+            retries: 3
