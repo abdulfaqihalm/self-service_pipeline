@@ -111,29 +111,32 @@ def train(df, category_cols=None):
                     .format(len(df[df[category_cols] == i])))
     return model
 
-def predict(date, model,category_cols=None):
+def predict(date, models,schedule_interval,category_cols=None ):
     
-    next_date = pd.DataFrame({'ds':pd.date_range(date + timedelta(1), date + timedelta(14), freq='D')})
-
+    next_date = pd.DataFrame({'ds':pd.date_range(date + timedelta(1), date + timedelta(schedule_interval), freq='D')})
+    print(models)
     if category_cols == None:
         result = {}
         result.setdefault('date', {})
         result.setdefault('forecast', {})
-        forecast = model.predict(next_date)
+        forecast = models.predict(next_date)
         result['forecast'][0] = int(round(forecast.yhat[0]))
         result['date'][0] = date
+        return pd.DataFrame.from_dict(result)
     
     elif category_cols != None:
+        forecast_result = pd.DataFrame()
         result = {}
         result.setdefault('date', {})
         result.setdefault('forecast', {})
         result.setdefault('category', {})
-        for idx,cat in enumerate(list(model.keys())):
-            forecast = model[cat].predict(next_date)
-            print(forecast)
-            result['date'][idx] = forecast.ds
-            result['forecast'][idx] = forecast.yhat.astype('int')
-            result['category'][idx] = cat
-
-
-    return pd.DataFrame.from_dict(result)
+        for cat, model in models.items():
+            print(cat)
+            forecast = model.predict(next_date)
+            result['date'] = forecast.ds
+            result['forecast'] = forecast.yhat.astype('int')
+            result['category']= [cat] * len(forecast.ds)
+            result_forecast = pd.DataFrame.from_dict(result)
+            forecast_result = forecast_result.append(result_forecast, ignore_index=True)
+            print(result_forecast)
+        return forecast_result

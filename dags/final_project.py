@@ -19,7 +19,7 @@ with open('dags/request.json') as f:
     request = json.load(f)
 
 DAG_NAME = request['DAG_NAME']
-SCHEDULE = request['SCHEDULE'] 
+SCHEDULE_INTERVAL = request['SCHEDULE_INTERVAL'] 
 BQ_CONN_ID = request['BQ_CONN_ID']
 BQ_PROJECT_DESTINATION = request['BQ_PROJECT_DESTINATION']
 BQ_DATASET_DESTINATION = request['BQ_DATASET_DESTINATION']
@@ -49,7 +49,7 @@ dag = DAG(
     dag_id=DAG_NAME,
     default_args=args,
     start_date=datetime(2018, 8, 1),
-    schedule_interval=timedelta(minutes=1),
+    schedule_interval=timedelta(days=SCHEDULE_INTERVAL),
     dagrun_timeout=timedelta(minutes=60),
     max_active_runs=1, 
     catchup=False
@@ -163,7 +163,7 @@ def train_mdl(**kwargs):
     prediction.to_csv('prediction.csv', index=False)
 
     #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
-    blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180914'+'.csv')
+    blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180831'+'.csv')
 
     blob.upload_from_filename('prediction.csv')
     return prediction
@@ -173,8 +173,8 @@ def predict_mdl(execution_date):
     byte_stream = io.BytesIO()
     blob.download_to_file(byte_stream)
     byte_stream.seek(0)
-    model = pickle.load(byte_stream)
-    result = prophet.predict(execution_date, model, category_cols=CATEGORY)
+    models = pickle.load(byte_stream)
+    result = prophet.predict(execution_date, models=models, schedule_interval=SCHEDULE_INTERVAL, category_cols=CATEGORY)
     return result
 
 def predict(**kwargs):
@@ -221,7 +221,7 @@ train = PythonOperator(
 mail = EmailOperator(
     task_id='mail',
     dag=dag,
-    trigger_rule='one_success',
+    trigger_rule='none_failed',
     to='abdullah.mubarok@tokopedia.com',
     subject='Reporting: Final Project {{ ds }}',
     params={
