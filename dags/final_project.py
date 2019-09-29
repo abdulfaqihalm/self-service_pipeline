@@ -2,7 +2,6 @@ import airflow
 import io
 import pandas as pd
 import json
-import gzip
 import pickle
 from airflow.models import DAG, Variable
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
@@ -10,10 +9,7 @@ from airflow.operators.email_operator import EmailOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook 
 from google.cloud import bigquery, storage
 from datetime import timedelta, datetime
-from fbprophet import Prophet 
 import modules.forecast_prophet as prophet
-import pprint
-pp = pprint.PrettyPrinter(indent=4)
 
 with open('dags/request.json') as f:
     request = json.load(f)
@@ -55,9 +51,6 @@ dag = DAG(
     catchup=False
 )
 
-def read_config():
-    return 
-
 def if_table_exists(**kwargs):
     bq_table = bq_client.dataset(BQ_DATASET_DESTINATION).table(BQ_TABLE_DESTINATION+'_'+'*')
     #read file 
@@ -97,7 +90,7 @@ def to_table(**kwargs):
     #is_table_exists = False
     if is_table_exists:
         #sql=QUERY.format('=',str(kwargs['execution_date'].date()))
-        sql=QUERY.format('=','2018-09-14 00:00:00')
+        sql=QUERY.format('2018-09-19 00:00:00','2018-09-19 23:59:59')
     else:
         #sql=QUERY.format('<=',str(kwargs['execution_date'].date()))
         sql=QUERY.format('<=','2018-08-31 00:00:00')
@@ -225,13 +218,14 @@ mail = EmailOperator(
     to='abdullah.mubarok@tokopedia.com',
     subject='Reporting: Final Project {{ ds }}',
     params={
+        'dag_name': DAG_NAME,
         'table': BQ_TABLE_DESTINATION, 
         'dataset': BQ_DATASET_DESTINATION,
         'project': BQ_PROJECT_DESTINATION,
         'bucket': BUCKET_DESTINATION
         },
     html_content=''' 
-    DAG name : {{ dag }}
+    DAG name : {{ params.dag_name }}
     <br>
     Table : {{ params.table }}
     <br>

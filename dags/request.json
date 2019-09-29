@@ -10,7 +10,7 @@
     "IS_USING_ML": false,
     "TARGET_FORECAST": "transaction",
     "CATEGORY": "category_id",
-    "QUERY": "SELECT nor.category_id, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor WHERE nor.create_time {} TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND category_id IN (1,2) GROUP BY 1, 2 ORDER BY 1, 2"
+    "QUERY": "SELECT nor.category_id, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND category_id IN (1,2) GROUP BY 1, 2 ORDER BY 1, 2"
    
 }
 
