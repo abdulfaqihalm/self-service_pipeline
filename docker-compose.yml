@@ -30,8 +30,8 @@ services:
           - AIRFLOW__SMTP__SMTP_SSL=False 
           - AIRFLOW__SMTP__SMTP_PORT=587
           #Your mail
-          - AIRFLOW__SMTP__SMTP_MAIL_FROM= 
-          - AIRFLOW__SMTP__SMTP_USER= 
+          - AIRFLOW__SMTP__SMTP_MAIL_FROM=
+          - AIRFLOW__SMTP__SMTP_USER=
           #Your mail pass
           - AIRFLOW__SMTP__SMTP_PASSWORD=
           #Change URL as the ports map you want
