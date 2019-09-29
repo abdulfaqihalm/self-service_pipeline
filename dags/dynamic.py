@@ -3,13 +3,14 @@ import io
 import pandas as pd
 import json
 import pickle
-from airflow.models import DAG, Variable
+from airflow.models import DAG
 from airflow.operators.python_operator import PythonOperator, BranchPythonOperator
 from airflow.operators.email_operator import EmailOperator
 from airflow.contrib.hooks.bigquery_hook import BigQueryHook 
 from google.cloud import bigquery, storage
 from datetime import timedelta, datetime
 import modules.forecast_prophet as prophet
+import modules.plotvis as plot
 
 
 
@@ -167,7 +168,7 @@ def create_dag(pipeline):
     def predict(**kwargs):
         #prediction = predict_mdl(kwargs['execution_date'].date())
         prediction = predict_mdl(datetime(2018,9,14).date())
-
+        plot.plotvis(prediction, SCHEDULE_INTERVAL, category_cols=CATEGORY)
         prediction.to_csv('prediction.csv', index=False)
         
         #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
@@ -206,6 +207,7 @@ def create_dag(pipeline):
             python_callable=train_mdl,
         )
 
+        #Change the 2018031 to {{ds_nodash}}
         mail = EmailOperator(
             task_id='mail',
             dag=dag,
@@ -228,11 +230,11 @@ def create_dag(pipeline):
             <br>
             Project : {{ params.project }}
             <br>
-            CSV link in GCS : https://storage.cloud.google.com/{{ params.bucket }}/{{ params.dataset }}/{{ params.table }}{{ds_nodash}}.csv
+            CSV link in GCS : https://storage.cloud.google.com/{{ params.bucket }}/{{ params.dataset }}/{{ params.table }}_20180831.csv
             <br>
             Number of recorded rows : {{task_instance.xcom_pull(task_ids='crt_table', key='row_num')}}
             ''',
-            files = ["dags/tooth.jpg"],
+            files = ["forecast_result.pdf"],
             cc=['rubila.adawiyah@tokopedia.com', 'lulu.sundayana@tokopedia.com'],
         )
 
