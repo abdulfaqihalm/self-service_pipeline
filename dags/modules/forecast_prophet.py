@@ -92,7 +92,7 @@ def train(df, category_cols=None):
             print(
                 'Your data only have {} datapoint, not enough data to do forecasting'
                 .format(len(df)))
-    elif category_cols != None:
+    else:
         df[category_cols] = df[category_cols].astype('category')
         for i in df[category_cols].dtypes.categories.tolist():
             print('#### Forecasting for category {} ####'.format(str(i)))
@@ -124,7 +124,7 @@ def predict(date, models,schedule_interval,category_cols=None ):
         result['date'][0] = date
         return pd.DataFrame.from_dict(result)
     
-    elif category_cols != None:
+    else:
         forecast_result = pd.DataFrame()
         result = {}
         result.setdefault('date', {})

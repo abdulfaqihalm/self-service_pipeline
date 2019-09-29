@@ -5,9 +5,9 @@ from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
 def plotvis(result_df, schedule_interval, category_cols=None):
-    if schedule_interval > 3:
+    if schedule_interval > 5:
         line_plot(result_df, category_cols)
-    elif schedule_interval <= 3:
+    else:
         barplot(result_df, schedule_interval, category_cols)
         
 def line_plot(result, category_cols=None):
@@ -22,7 +22,7 @@ def line_plot(result, category_cols=None):
         axs.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
         axs.xaxis.set_tick_params(rotation=90)
         fig.savefig('forecast_result.pdf')
-    elif category_cols != None:
+    else:
         plt.style.use('ggplot')
  
         cat = result[category_cols].unique().tolist()
@@ -59,7 +59,7 @@ def barplot(result_df,schedule_interval, category_cols=None):
         ax.get_figure().savefig('forecast_result.pdf')
     
         
-    elif category_cols != None:
+    else:
         plt.style.use('ggplot')
         aggregate =result_df.groupby(by=category_cols).agg({'forecast':sum}).reset_index().sort_values(by='forecast', ascending=False)
         ax =aggregate.plot(kind='bar', x=category_cols, y='forecast', color ="coral")
