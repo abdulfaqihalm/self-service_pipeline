@@ -29,7 +29,13 @@ def create_dag(pipeline):
     IS_USING_ML = pipeline['model']['is_using_ml']
     TARGET_FORECAST = pipeline['model']['target_forecast']
     CATEGORY = pipeline['model']['category']
+    YLABEL = pipeline['viz']['ylabel']
     QUERY = pipeline['query'] 
+
+    if IS_USING_ML:
+        ATTACHED_FILE = ['forecast_result.pdf']
+    else:
+        ATTACHED_FILE = None
     
     # Connection Hook
     bq_hook = BigQueryHook(bigquery_conn_id=BQ_CONN_ID, use_legacy_sql=False)
@@ -88,7 +94,7 @@ def create_dag(pipeline):
             sql=QUERY.format('2018-09-19 00:00:00','2018-09-19 23:59:59')
         else:
             #sql=QUERY.format('<=',str(kwargs['execution_date'].date()))
-            sql=QUERY.format('<=','2018-08-31 00:00:00')
+            sql=QUERY.format('2018-01-01 00:00:00','2018-08-31 23:59:59')
 
         query_job = bq_client.query(
             sql,
@@ -147,13 +153,6 @@ def create_dag(pipeline):
         
         #prediction = predict_mdl(kwargs['execution_date'].date())
         prediction = predict_mdl(datetime(2018,8,31).date())
-
-        prediction.to_csv('prediction.csv', index=False)
-
-        #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
-        blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180831'+'.csv')
-
-        blob.upload_from_filename('prediction.csv')
         return prediction
 
     def predict_mdl(execution_date):
@@ -162,19 +161,21 @@ def create_dag(pipeline):
         blob.download_to_file(byte_stream)
         byte_stream.seek(0)
         models = pickle.load(byte_stream)
-        result = prophet.predict(execution_date, models=models, schedule_interval=SCHEDULE_INTERVAL, category_cols=CATEGORY)
-        return result
+        prediction = prophet.predict(execution_date, models=models, schedule_interval=SCHEDULE_INTERVAL, category_cols=CATEGORY)
+        plot.plotvis(prediction, YLABEL, SCHEDULE_INTERVAL, category_cols=CATEGORY)
+        prediction.to_csv('prediction.csv', index=False)
+
+        #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
+        blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180831'+'.csv')
+
+        blob.upload_from_filename('prediction.csv')
+        return prediction
 
     def predict(**kwargs):
         #prediction = predict_mdl(kwargs['execution_date'].date())
         prediction = predict_mdl(datetime(2018,9,14).date())
-        plot.plotvis(prediction, SCHEDULE_INTERVAL, category_cols=CATEGORY)
-        prediction.to_csv('prediction.csv', index=False)
-        
-        #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
-        blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180914'+'.csv')
-        blob.upload_from_filename('prediction.csv')
         return prediction
+    
 
     with dag: 
         chck_table = PythonOperator(
@@ -219,7 +220,8 @@ def create_dag(pipeline):
                 'table': BQ_TABLE_DESTINATION, 
                 'dataset': BQ_DATASET_DESTINATION,
                 'project': BQ_PROJECT_DESTINATION,
-                'bucket': BUCKET_DESTINATION
+                'bucket': BUCKET_DESTINATION,
+                'using_ml': IS_USING_ML
                 },
             html_content=''' 
             DAG name : {{ params.dag_name }}
@@ -234,7 +236,7 @@ def create_dag(pipeline):
             <br>
             Number of recorded rows : {{task_instance.xcom_pull(task_ids='crt_table', key='row_num')}}
             ''',
-            files = ["forecast_result.pdf"],
+            files = ATTACHED_FILE,
             cc=['rubila.adawiyah@tokopedia.com', 'lulu.sundayana@tokopedia.com'],
         )
 

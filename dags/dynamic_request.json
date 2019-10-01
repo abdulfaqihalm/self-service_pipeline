@@ -23,9 +23,12 @@
         "model": {
             "is_using_ml": false,
             "target_forecast": "transaction",
-            "category": "category_id"
+            "category": "category_name"
         },
-        "query": "SELECT nor.category_id, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND category_id IN (1,2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "viz": {
+            "ylabel":"Sales"
+        },
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
     },
     "pipeline1": {
         "dag": {
@@ -49,16 +52,19 @@
             "folder_in_bucket": "order_recharge/"
         },
         "model": {
-            "is_using_ml": false,
+            "is_using_ml": true,
             "target_forecast": "transaction",
-            "category": "category_id"
+            "category": "category_name"
         },
-        "query": "SELECT nor.category_id, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND category_id IN (1,2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "viz": {
+            "ylabel":"Sales"
+        },        
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
     },
     "pipeline2": {
         "dag": {
             "dag_name": "pipeline2",
-            "schedule_interval": 14
+            "schedule_interval": 12
         },
         "args" : {
             "owner": "Faqih",
@@ -79,8 +85,11 @@
         "model": {
             "is_using_ml": false,
             "target_forecast": "transaction",
-            "category": "category_id"
+            "category": "category_name"
         },
-        "query": "SELECT nor.category_id, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND category_id IN (1,2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "viz": {
+            "ylabel":"Sales"
+        },
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
     }
 }

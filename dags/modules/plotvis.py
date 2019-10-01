@@ -4,13 +4,13 @@ from pandas.plotting import register_matplotlib_converters
 
 register_matplotlib_converters()
 
-def plotvis(result_df, schedule_interval, category_cols=None):
+def plotvis(result_df, ylabel, schedule_interval, category_cols=None):
     if schedule_interval > 5:
-        line_plot(result_df, category_cols)
+        line_plot(result_df,ylabel,  category_cols)
     else:
-        barplot(result_df, schedule_interval, category_cols)
+        barplot(result_df, ylabel, schedule_interval, category_cols)
         
-def line_plot(result, category_cols=None):
+def line_plot(result, ylabel, category_cols=None):
     if category_cols == None:
         figsize=(10, 5)
         fig, axs = plt.subplots(1, 1, constrained_layout=False, figsize=figsize)
@@ -18,6 +18,7 @@ def line_plot(result, category_cols=None):
         temp = result.copy()
         axs.plot(temp['date'], temp['forecast'], c='#0072B2')
         axs.set_title('Forecasting Result')
+        axs.set_ylabel(ylabel)
         axs.xaxis.set_major_locator(mdates.DayLocator())
         axs.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
         axs.xaxis.set_tick_params(rotation=90)
@@ -33,20 +34,22 @@ def line_plot(result, category_cols=None):
         for idx,i in enumerate(cat):
             temp = result[result[category_cols]==i]
             axs[idx].plot(temp['date'], temp['forecast'], c='#0072B2')
-            axs[idx].set_title('Forecasting {}'.format(i))
+            axs[idx].set_title('Forecasting Result of {}'.format(i))
+            axs[idx].set_ylabel(ylabel)
             axs[idx].xaxis.set_major_locator(mdates.DayLocator())
             axs[idx].xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m-%d"))
             axs[idx].xaxis.set_tick_params(rotation=90)
 
         fig.savefig('forecast_result.pdf')
 
-def barplot(result_df,schedule_interval, category_cols=None):    
+def barplot(result_df, ylabel, schedule_interval, category_cols=None):    
     if (category_cols== None):
 
         fig, ax = plt.subplots()
         plt.style.use('ggplot')
         agg = sum(result_df.forecast)
         ax.bar('Forecasting result for the next {} days'.format(schedule_interval),agg, align='center', width=0.3)
+        ax.set_ylabel(ylabel)
 
         plt.xticks(rotation=0)
         totals = []
@@ -63,6 +66,7 @@ def barplot(result_df,schedule_interval, category_cols=None):
         plt.style.use('ggplot')
         aggregate =result_df.groupby(by=category_cols).agg({'forecast':sum}).reset_index().sort_values(by='forecast', ascending=False)
         ax =aggregate.plot(kind='bar', x=category_cols, y='forecast', color ="coral")
+        axs.set_ylabel(ylabel)
 
         ax.set_alpha(0.8)
         ax.set_xlabel('Date')

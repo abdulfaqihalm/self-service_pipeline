@@ -129,13 +129,13 @@ def predict(date, models,schedule_interval,category_cols=None ):
         result = {}
         result.setdefault('date', {})
         result.setdefault('forecast', {})
-        result.setdefault('category_id', {})
+        result.setdefault('category_name', {})
         for cat, model in models.items():
             print(cat)
             forecast = model.predict(next_date)
             result['date'] = forecast.ds
             result['forecast'] = forecast.yhat.astype('int')
-            result['category_id']= [cat] * len(forecast.ds)
+            result['category_name']= [cat] * len(forecast.ds)
             result_forecast = pd.DataFrame.from_dict(result)
             forecast_result = forecast_result.append(result_forecast, ignore_index=True)
             print(result_forecast)
