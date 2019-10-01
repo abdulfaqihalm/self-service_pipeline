@@ -66,7 +66,7 @@ def barplot(result_df, ylabel, schedule_interval, category_cols=None):
         plt.style.use('ggplot')
         aggregate =result_df.groupby(by=category_cols).agg({'forecast':sum}).reset_index().sort_values(by='forecast', ascending=False)
         ax =aggregate.plot(kind='bar', x=category_cols, y='forecast', color ="coral")
-        axs.set_ylabel(ylabel)
+        ax.set_ylabel(ylabel)
 
         ax.set_alpha(0.8)
         ax.set_xlabel('Date')
