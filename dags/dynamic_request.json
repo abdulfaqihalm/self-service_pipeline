@@ -28,7 +28,8 @@
         "viz": {
             "ylabel":"Sales"
         },
-        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2",
+        "start_datetime_query": "2018-01-01 00:00:00"
     },
     "pipeline1": {
         "dag": {
@@ -59,7 +60,8 @@
         "viz": {
             "ylabel":"Sales"
         },        
-        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2",
+        "start_datetime_query": "2018-01-01 00:00:00"
     },
     "pipeline2": {
         "dag": {
@@ -90,6 +92,7 @@
         "viz": {
             "ylabel":"Sales"
         },
-        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2"
+        "query": "SELECT dim_categ.name as category_name, DATE( TIMESTAMP_ADD(nor.create_time, INTERVAL 7 hour) ) ds, COUNT(1) y FROM `ws_order_recharge.order_recharge` nor INNER JOIN `ws_order_recharge.bi_dim_recharge_category` AS dim_categ ON nor.category_id=dim_categ.category_id WHERE nor.create_time BETWEEN TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND TIMESTAMP_ADD( timestamp '{}', INTERVAL -7 hour ) AND nor.order_status IN (700, 701, 702) AND nor.category_id IN (1, 2) GROUP BY 1, 2 ORDER BY 1, 2",
+        "start_datetime_query": "2018-01-01 00:00:00"
     }
 }

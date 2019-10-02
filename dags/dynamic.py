@@ -30,12 +30,15 @@ def create_dag(pipeline):
     TARGET_FORECAST = pipeline['model']['target_forecast']
     CATEGORY = pipeline['model']['category']
     YLABEL = pipeline['viz']['ylabel']
-    QUERY = pipeline['query'] 
+    QUERY = pipeline['query']
+    START_DATETIME_QUERY = pipeline['start_datetime_query'] 
 
     if IS_USING_ML:
         ATTACHED_FILE = ['forecast_result.pdf']
     else:
         ATTACHED_FILE = None
+
+    
     
     # Connection Hook
     bq_hook = BigQueryHook(bigquery_conn_id=BQ_CONN_ID, use_legacy_sql=False)
@@ -90,11 +93,13 @@ def create_dag(pipeline):
         
         #is_table_exists = False
         if is_table_exists:
-            #sql=QUERY.format('=',str(kwargs['execution_date'].date()))
-            sql=QUERY.format('2018-09-19 00:00:00','2018-09-19 23:59:59')
+            #sql=QUERY.format(str(datetime.fromtimestamp(kwargs['execution_date'].timestamp()) - timedelta(SCHEDULE_INTERVAL - 1)) ,str(datetime.fromtimestamp(kwargs['execution_date'].timestamp())))
+            sql=QUERY.format('2018-09-01 00:00:00','2018-09-14 23:59:59')
+            kwargs['ti'].xcom_push(key='csv_file', value='20180914')
         else:
-            #sql=QUERY.format('<=',str(kwargs['execution_date'].date()))
+            #sql=QUERY.format(START_DATETIME_QUERY,str(datetime.fromtimestamp(kwargs['execution_date'].timestamp())))
             sql=QUERY.format('2018-01-01 00:00:00','2018-08-31 23:59:59')
+            kwargs['ti'].xcom_push(key='csv_file', value='20180831')
 
         query_job = bq_client.query(
             sql,
@@ -166,7 +171,7 @@ def create_dag(pipeline):
         prediction.to_csv('prediction.csv', index=False)
 
         #blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+str((kwargs['execution_date']+timedelta(days=1)).date().strftime('%Y%m%d'))+'.csv')
-        blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_20180831'+'.csv')
+        blob = storage_client.get_bucket(BUCKET_DESTINATION).blob(FOLDER_IN_BUCKET+'prediction/prediction_'+execution_date.strftime('%Y%m%d')+'.csv')
 
         blob.upload_from_filename('prediction.csv')
         return prediction
@@ -214,7 +219,7 @@ def create_dag(pipeline):
             dag=dag,
             trigger_rule='none_failed',
             to='abdullah.mubarok@tokopedia.com',
-            subject='Reporting: Final Project {{ ds }}',
+            subject='Reporting: {{ params.dag_name }} {{ ds }}',
             params={
                 'dag_name': DAG_NAME,
                 'table': BQ_TABLE_DESTINATION, 
@@ -232,7 +237,7 @@ def create_dag(pipeline):
             <br>
             Project : {{ params.project }}
             <br>
-            CSV link in GCS : https://storage.cloud.google.com/{{ params.bucket }}/{{ params.dataset }}/{{ params.table }}_20180831.csv
+            CSV link in GCS : https://storage.cloud.google.com/{{ params.bucket }}/{{ params.dataset }}/{{ params.table }}_{{task_instance.xcom_pull(task_ids='crt_table', key='csv_file')}}.csv
             <br>
             Number of recorded rows : {{task_instance.xcom_pull(task_ids='crt_table', key='row_num')}}
             ''',
